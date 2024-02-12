@@ -4,7 +4,7 @@ PKG_CONFIG = pkg-config
 INSTALL = install
 CFLAGS = -g -O2 -Wall -Wextra
 LDFLAGS =
-LIBS =
+LIBS = -lcurl -lcjson
 VLC_PLUGIN_CFLAGS := $(shell $(PKG_CONFIG) --cflags vlc-plugin)
 VLC_PLUGIN_LIBS := $(shell $(PKG_CONFIG) --libs vlc-plugin)
 VLC_PLUGIN_DIR := $(shell $(PKG_CONFIG) --variable=pluginsdir vlc-plugin)
