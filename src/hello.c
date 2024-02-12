@@ -103,7 +103,7 @@ MagnetMetadataControl(stream_t* access, int query, va_list args)
         *va_arg(args, bool*) = true;
         break;
     case STREAM_GET_CONTENT_TYPE:
-        *va_arg(args, char**) = strdup("application/x-bittorrent");
+        *va_arg(args, char**) = strdup("application/yandexmusic");
         break;
     default:
         return VLC_EGENERIC;
@@ -113,12 +113,45 @@ MagnetMetadataControl(stream_t* access, int query, va_list args)
 }
 
 
+static int
+MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
+{
+    intf_thread_t *intf = (intf_thread_t *)p_directory;
+    msg_Info(intf, "10 Good bye YaM!");
+
+
+    struct vlc_readdir_helper rdh;
+    vlc_readdir_helper_init(&rdh, p_directory, p_node);
+
+
+
+    int ret = vlc_readdir_helper_additem(
+            &rdh, "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3", "test", NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
+        if (ret != VLC_SUCCESS)
+            msg_Warn(p_directory, "Failed to add %s", "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3");
+
+
+    vlc_readdir_helper_finish(&rdh, true);
+
+    return VLC_SUCCESS;
+}
+
 int
 MetadataOpen(vlc_object_t* p_this)
 {
     intf_thread_t *intf = (intf_thread_t *)p_this;
     msg_Info(intf, "9 Good bye YaM!");
-    return VLC_EGENERIC;
+
+    stream_directory_t* p_directory = (stream_directory_t*) p_this;
+
+    msg_Info(intf, "9.1 Good bye YaM! %s", stream_MimeType(p_directory->source));
+
+    if (!stream_IsMimeType(p_directory->source, "application/yandexmusic"))
+        return VLC_EGENERIC;
+
+    p_directory->pf_readdir = MetadataReadDir;
+
+    return VLC_SUCCESS;
 }
 
 int
@@ -130,12 +163,15 @@ MagnetMetadataOpen(vlc_object_t* p_this)
     stream_t* p_access = (stream_t*) p_this;
     msg_Info(intf, "5 Good bye YaM! %s", p_access->psz_name);
 
-    if (strcmp(p_access->psz_name, "http")==0){
+    if (strcmp(p_access->psz_name, "https")==0
+    ){
          msg_Info(intf, "4 Good bye YaM! %s", p_access->psz_location);
-
-    } else if (strcmp(p_access->psz_name, "https")==0){
-         msg_Info(intf, "4 Good bye YaM! %s", p_access->psz_location);
-
+         msg_Info(intf, "4.2 Good bye YaM! %d", strstr(p_access->psz_location, "music.yandex.ru"));
+         if (strstr(p_access->psz_location, "music.yandex.ru") != 0){
+             msg_Info(intf, "4.1 Good bye YaM! ");
+         } else {
+            return VLC_EGENERIC;
+        }
 
     } else {
         return VLC_EGENERIC;
@@ -157,5 +193,4 @@ MagnetMetadataClose(vlc_object_t* p_this)
 {
     intf_thread_t *intf = (intf_thread_t *)p_this;
     msg_Info(intf, "3 Good bye YaM!");
-
 }
