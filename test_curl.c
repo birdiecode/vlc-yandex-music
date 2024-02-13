@@ -16,7 +16,6 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, char **data) {
     return data_size;
 }
 
-
 int account_status(){
     CURL *curl;
     CURLcode res;
@@ -315,8 +314,6 @@ void download_info(int trId, int alId){
         free(response);
     }
 }
-
-
 
 int main() {
     TrackSt trc = fetch_track(atoi("28423051"), atoi("3400046"));

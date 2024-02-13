@@ -1,5 +1,5 @@
 LD = ld
-CC = cc
+CC = echo
 PKG_CONFIG = pkg-config
 INSTALL = install
 CFLAGS = -g -O2 -Wall -Wextra

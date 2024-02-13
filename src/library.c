@@ -56,10 +56,10 @@ vlc_module_begin()
     add_password(ACCOUNT_PASSWORD_CONFIG, NULL, "Password","Password you account.", false)
 
     add_submodule()
-        set_description("Bittorrent magnet metadata access")
-        set_capability("access", 60)
-        add_shortcut("http", "https")
-        set_callbacks(MagnetMetadataOpen, MagnetMetadataClose)
+    set_description("Bittorrent magnet metadata access")
+    set_capability("access", 60)
+    add_shortcut("http", "https")
+    set_callbacks(MagnetMetadataOpen, MagnetMetadataClose)
 vlc_module_end()
 
 
@@ -195,23 +195,23 @@ MagnetMetadataControl(stream_t* access, int query, va_list args)
     msg_Info(intf, "8 Good bye YaM!");
 
     switch (query) {
-    case STREAM_GET_PTS_DELAY:
-        *va_arg(args, int64_t*) = DEFAULT_PTS_DELAY;
-        break;
-    case STREAM_CAN_SEEK:
-        *va_arg(args, bool*) = false;
-        break;
-    case STREAM_CAN_PAUSE:
-        *va_arg(args, bool*) = false;
-        break;
-    case STREAM_CAN_CONTROL_PACE:
-        *va_arg(args, bool*) = true;
-        break;
-    case STREAM_GET_CONTENT_TYPE:
-        *va_arg(args, char**) = strdup("application/yandexmusic");
-        break;
-    default:
-        return VLC_EGENERIC;
+        case STREAM_GET_PTS_DELAY:
+            *va_arg(args, int64_t*) = DEFAULT_PTS_DELAY;
+            break;
+        case STREAM_CAN_SEEK:
+            *va_arg(args, bool*) = false;
+            break;
+        case STREAM_CAN_PAUSE:
+            *va_arg(args, bool*) = false;
+            break;
+        case STREAM_CAN_CONTROL_PACE:
+            *va_arg(args, bool*) = true;
+            break;
+        case STREAM_GET_CONTENT_TYPE:
+            *va_arg(args, char**) = strdup("application/yandexmusic");
+            break;
+        default:
+            return VLC_EGENERIC;
     }
 
     return VLC_SUCCESS;
@@ -323,84 +323,84 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
     if (rets != 0){
         msg_Info(intf, "Useer ID: %d\n", rets);
         char base_url[] = "https://api.music.yandex.net/users/";
-    char additional_url[] = "/likes/tracks";
-    char url[100]; // Создаем массив для хранения итоговой строки
+        char additional_url[] = "/likes/tracks";
+        char url[100]; // Создаем массив для хранения итоговой строки
 
-    // Конкатенация строк с использованием sprintf
-    sprintf(url, "%s%d%s", base_url, rets, additional_url);
-
-
-    CURL *curl;
-    CURLcode res;
-    char *response = malloc(1);
-    response[0] = '\0';
-
-    curl = curl_easy_init();
-    if (curl) {
-
-        struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, "X-Yandex-Music-Client: YandexMusicAndroid/24023621");
-        chunk = curl_slist_append(chunk, "Authorization: OAuth y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ");
-        chunk = curl_slist_append(chunk, "Accept-Language: ru");
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+        // Конкатенация строк с использованием sprintf
+        sprintf(url, "%s%d%s", base_url, rets, additional_url);
 
 
-        curl_easy_setopt(curl, CURLOPT_URL, url);
+        CURL *curl;
+        CURLcode res;
+        char *response = malloc(1);
+        response[0] = '\0';
 
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl = curl_easy_init();
+        if (curl) {
 
-        res = curl_easy_perform(curl);
+            struct curl_slist *chunk = NULL;
+            chunk = curl_slist_append(chunk, "X-Yandex-Music-Client: YandexMusicAndroid/24023621");
+            chunk = curl_slist_append(chunk, "Authorization: OAuth y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ");
+            chunk = curl_slist_append(chunk, "Accept-Language: ru");
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
 
-        if (res == CURLE_OK) {
-            printf("Ответ на запрос:\n%s\n", response);
 
-            cJSON *root = cJSON_Parse(response);
-            if (root == NULL) {
-                printf("Ошибка при парсинге JSON.\n");
-                return VLC_EGENERIC;
+            curl_easy_setopt(curl, CURLOPT_URL, url);
 
-            }
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-            // Находим массив треков
-            cJSON *tracks = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(root, "result"), "library"), "tracks");
-            if (tracks == NULL) {
-                printf("Массив треков не найден.\n");
-                cJSON_Delete(root);
-                return VLC_EGENERIC;
-            }
+            res = curl_easy_perform(curl);
 
-            // Выводим идентификаторы треков на консоль
-            printf("Идентификаторы треков %d:\n", cJSON_GetArraySize(tracks));
-            for (int i = 0; i < cJSON_GetArraySize(tracks); i++) {
-                cJSON *track = cJSON_GetArrayItem(tracks, i);
-                cJSON *track_id = cJSON_GetObjectItem(track, "id");
-                cJSON *track_album_id = cJSON_GetObjectItem(track, "albumId");
+            if (res == CURLE_OK) {
+                printf("Ответ на запрос:\n%s\n", response);
 
-                int ret;
+                cJSON *root = cJSON_Parse(response);
+                if (root == NULL) {
+                    printf("Ошибка при парсинге JSON.\n");
+                    return VLC_EGENERIC;
 
-                if (track_id != NULL && track_album_id != NULL) {
-                     msg_Info(intf, "%s\t%s\n", track_id->valuestring, track_album_id->valuestring);
-                     TrackSt trc = fetch_track(atoi(track_id->valuestring), atoi(track_album_id->valuestring));
-
-                     ret = vlc_readdir_helper_additem(&rdh, "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3", trc.title, NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
-                     if (ret != VLC_SUCCESS)
-                         msg_Warn(p_directory, "Failed to add %s\t%s", track_id->valuestring, track_album_id->valuestring);
                 }
+
+                // Находим массив треков
+                cJSON *tracks = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(root, "result"), "library"), "tracks");
+                if (tracks == NULL) {
+                    printf("Массив треков не найден.\n");
+                    cJSON_Delete(root);
+                    return VLC_EGENERIC;
+                }
+
+                // Выводим идентификаторы треков на консоль
+                printf("Идентификаторы треков %d:\n", cJSON_GetArraySize(tracks));
+                for (int i = 0; i < cJSON_GetArraySize(tracks); i++) {
+                    cJSON *track = cJSON_GetArrayItem(tracks, i);
+                    cJSON *track_id = cJSON_GetObjectItem(track, "id");
+                    cJSON *track_album_id = cJSON_GetObjectItem(track, "albumId");
+
+                    int ret;
+
+                    if (track_id != NULL && track_album_id != NULL) {
+                        msg_Info(intf, "%s\t%s\n", track_id->valuestring, track_album_id->valuestring);
+                        TrackSt trc = fetch_track(atoi(track_id->valuestring), atoi(track_album_id->valuestring));
+
+                        ret = vlc_readdir_helper_additem(&rdh, "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3", trc.title, NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
+                        if (ret != VLC_SUCCESS)
+                            msg_Warn(p_directory, "Failed to add %s\t%s", track_id->valuestring, track_album_id->valuestring);
+                    }
+                }
+
+                // Освобождаем память
+                cJSON_Delete(root);
+
+
+            } else {
+                printf("Ошибка при выполнении запроса: %s\n", curl_easy_strerror(res));
+                return VLC_EGENERIC;
             }
 
-            // Освобождаем память
-            cJSON_Delete(root);
-
-
-        } else {
-            printf("Ошибка при выполнении запроса: %s\n", curl_easy_strerror(res));
-            return VLC_EGENERIC;
+            curl_easy_cleanup(curl);
+            free(response);
         }
-
-        curl_easy_cleanup(curl);
-        free(response);
-    }
 
 
 
@@ -412,8 +412,8 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
 
     int ret = vlc_readdir_helper_additem(
             &rdh, "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3", "test", NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
-        if (ret != VLC_SUCCESS)
-            msg_Warn(p_directory, "Failed to add %s", "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3");
+    if (ret != VLC_SUCCESS)
+        msg_Warn(p_directory, "Failed to add %s", "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3");
 
 
     vlc_readdir_helper_finish(&rdh, true);
@@ -449,12 +449,12 @@ MagnetMetadataOpen(vlc_object_t* p_this)
     msg_Info(intf, "5 Good bye YaM! %s", p_access->psz_name);
 
     if (strcmp(p_access->psz_name, "https")==0
-    ){
-         msg_Info(intf, "4 Good bye YaM! %s", p_access->psz_location);
-         msg_Info(intf, "4.2 Good bye YaM! %d", strstr(p_access->psz_location, "music.yandex.ru"));
-         if (strstr(p_access->psz_location, "music.yandex.ru") != 0){
-             msg_Info(intf, "4.1 Good bye YaM! ");
-         } else {
+            ){
+        msg_Info(intf, "4 Good bye YaM! %s", p_access->psz_location);
+        msg_Info(intf, "4.2 Good bye YaM! %d", strstr(p_access->psz_location, "music.yandex.ru"));
+        if (strstr(p_access->psz_location, "music.yandex.ru") != 0){
+            msg_Info(intf, "4.1 Good bye YaM! ");
+        } else {
             return VLC_EGENERIC;
         }
 
