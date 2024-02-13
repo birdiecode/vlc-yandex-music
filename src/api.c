@@ -1,10 +1,12 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+//
+// Created by birdiecode on 13.02.24.
+//
+
+#include "api.h"
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
-
-//gcc test_api_yandex.c -lcurl -lcjson -o test_yandex_api
+#include <stdlib.h>
+#include <string.h>
 
 //Функция раширения памяти и записи результата
 size_t write_callback(void *ptr, size_t size, size_t nmemb, char **data) {
@@ -42,17 +44,8 @@ CURLcode curl(char *url, char *token, char **result){
     } else {
         res = CURLE_SEND_ERROR;
     }
-
     return res;
 }
-
-struct Track {
-    char* track_name;
-    char* album_name;
-    int track_id;
-    int album_id;
-    struct Track* next;
-};
 
 void pushTrack(struct Track** head_ref, const char* trName, const char* albName, int trId, int albId) {
     struct Track* new_node = (struct Track*)malloc(sizeof(struct Track));
@@ -68,6 +61,7 @@ void pushTrack(struct Track** head_ref, const char* trName, const char* albName,
     (*head_ref) = new_node;
 }
 
+// Освобождение памяти от треков
 void freeTrackList(struct Track* node) {
     struct Track* current = node;
     struct Track* next;
@@ -80,6 +74,7 @@ void freeTrackList(struct Track* node) {
     }
 }
 
+// Получение треков
 int users_playlists(char* user_name, int kind, struct Track** result)
 {
     char *resp = malloc(1);
@@ -124,30 +119,10 @@ int users_playlists(char* user_name, int kind, struct Track** result)
                 pushTrack(
                         result, track_title->valuestring, album_title->valuestring,
                         atoi(track_id->valuestring), album_id->valueint
-                        );
+                );
             }
         }
         cJSON_Delete(root);
     }
-    return 0;
-}
-
-
-
-int main() {
-    struct Track* tracks = NULL;
-
-    int res = users_playlists("", 1024, &tracks);
-
-    struct Track* tracksTemp = tracks;
-    if (res == 0){
-        while (tracksTemp != NULL) {
-            printf("%s \n", tracksTemp->track_name);
-            tracksTemp = tracksTemp->next;
-        }
-    }
-    freeTrackList(tracks);
-    free(tracksTemp);
-
     return 0;
 }

@@ -14,7 +14,14 @@ pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
 
 
 
-add_library(yandex_music_plugin SHARED src/library.c)
+add_library(yandex_music_plugin SHARED src/library.c
+        src/api.c
+        src/api.h
+        src/interceptor.c
+        src/interceptor.h
+        src/handler.c
+        src/handler.h
+)
 
 target_include_directories(yandex_music_plugin PUBLIC
         ${CJSON_INCLUDE_DIRS}
@@ -40,3 +47,22 @@ target_link_libraries(yandex_music_plugin PkgConfig::VLCPLUGIN)
 install(TARGETS yandex_music_plugin
         DESTINATION /usr/lib/x86_64-linux-gnu/vlc/plugins/misc  # Место установки библиотеки
 )
+
+
+project(untitled1 C)
+
+set(CMAKE_C_STANDARD 11)
+
+add_executable(untitled1 test_api_yandex.c)
+
+target_include_directories(untitled1 PUBLIC
+        ${CJSON_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(untitled1 PkgConfig::CJSON)
+
+target_include_directories(untitled1 PUBLIC
+        ${CURL_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(untitled1 PkgConfig::CURL)
