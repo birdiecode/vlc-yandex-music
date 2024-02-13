@@ -67,14 +67,21 @@ InterceptorOpen(vlc_object_t* p_this)
     stream_t* p_access = (stream_t*) p_this;
     msg_Info(p_access, "[InterceptorOpen] check");
 
-    if (strcmp(p_access->psz_name, "https")==0){
+    if (strcmp(p_access->psz_name, "https")==0)
+    {
         msg_Info(p_access, "[InterceptorOpen] location %s", p_access->psz_location);
         if (strstr(p_access->psz_location, "music.yandex.ru") != 0){
             msg_Info(p_access, "[InterceptorOpen] ok");
         } else {
             return VLC_EGENERIC;
         }
-    } else {
+    }
+    else if (strcmp(p_access->psz_name, "yandextrack")==0)
+    {
+
+    }
+    else
+    {
         return VLC_EGENERIC;
     }
 
