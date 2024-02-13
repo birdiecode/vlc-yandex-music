@@ -8,6 +8,7 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(CJSON REQUIRED IMPORTED_TARGET libcjson)
 pkg_check_modules(VLCPLUGIN REQUIRED IMPORTED_TARGET vlc-plugin)
+pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
 
 
 
@@ -20,6 +21,12 @@ target_include_directories(yandex_music_plugin PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_link_libraries(yandex_music_plugin PkgConfig::CJSON)
+
+target_include_directories(yandex_music_plugin PUBLIC
+        ${CURL_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(yandex_music_plugin PkgConfig::CURL)
 
 target_include_directories(yandex_music_plugin PUBLIC
         ${VLCPLUGIN_INCLUDE_DIRS}
