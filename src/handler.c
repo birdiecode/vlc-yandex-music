@@ -56,7 +56,7 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
             struct vlc_readdir_helper rdh;
             vlc_readdir_helper_init(&rdh, p_directory, p_node);
             int ret = vlc_readdir_helper_additem(
-                    &rdh, strdup(rresult), "sdasda", NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
+                    &rdh, strdup(rresult), p_node->p_item->psz_name, NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
             vlc_readdir_helper_finish(&rdh, true);
             free(rresult);
             return VLC_SUCCESS;
