@@ -10,6 +10,27 @@
 #include "handler.h"
 #include "api.h"
 
+void extractFields(char *url, char **users, char **playlists) {
+    regex_t regex;
+    regmatch_t matches[3];
+    regcomp(&regex, "/users/([^/]+)/playlists/([^/]+)", REG_EXTENDED);
+
+    if (regexec(&regex, url, 3, matches, 0) == 0) {
+        // Извлекаем значение для поля 'users'
+        size_t username_length = matches[1].rm_eo - matches[1].rm_so;
+        *users = (char*)malloc(username_length + 1);
+        strncpy(*users, url + matches[1].rm_so, username_length);
+        (*users)[username_length] = '\0';
+
+        // Извлекаем значение для поля 'playlists'
+        size_t playlist_length = matches[2].rm_eo - matches[2].rm_so;
+        *playlists = (char*)malloc(playlist_length + 1);
+        strncpy(*playlists, url + matches[2].rm_so, playlist_length);
+        (*playlists)[playlist_length] = '\0';
+    }
+
+    regfree(&regex);
+}
 
 static int
 MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
@@ -70,34 +91,47 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
     }
     else if (strstr(p_node->p_item->psz_uri, "https://music.yandex.ru") != 0)
     {
-        struct Track* tracks = NULL;
-        int res = users_playlists("", 1024, &tracks);
 
-        struct vlc_readdir_helper rdh;
-        vlc_readdir_helper_init(&rdh, p_directory, p_node);
+        char *users;
+        char *playlists;
+
+        extractFields(p_node->p_item->psz_uri, &users, &playlists);
+
+        if (users && playlists) {
+            struct Track* tracks = NULL;
+            int res = users_playlists(users, atoi(playlists), &tracks);
+
+            struct vlc_readdir_helper rdh;
+            vlc_readdir_helper_init(&rdh, p_directory, p_node);
 
 
-        struct Track* tracksTemp = tracks;
-        if (res == 0){
-            while (tracksTemp != NULL) {
+            struct Track* tracksTemp = tracks;
+            if (res == 0){
+                while (tracksTemp != NULL) {
 
-                char authorization[350];
-                sprintf(authorization, "yandextrack://%d/%d", tracksTemp->track_id, tracksTemp->album_id);
+                    char authorization[350];
+                    sprintf(authorization, "yandextrack://%d/%d", tracksTemp->track_id, tracksTemp->album_id);
 
-                int ret = vlc_readdir_helper_additem(
-                        &rdh, strdup(authorization), strdup(tracksTemp->track_name), NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
-                if (ret != VLC_SUCCESS)
-                    msg_Warn(p_directory, "Failed to add %s", tracksTemp->track_name);
+                    int ret = vlc_readdir_helper_additem(
+                            &rdh, strdup(authorization), strdup(tracksTemp->track_name), NULL, ITEM_TYPE_FILE, ITEM_LOCAL);
+                    if (ret != VLC_SUCCESS)
+                        msg_Warn(p_directory, "Failed to add %s", tracksTemp->track_name);
 
-                tracksTemp = tracksTemp->next;
+                    tracksTemp = tracksTemp->next;
+                }
             }
+
+            freeTrackList(tracks);
+            free(tracksTemp);
+            vlc_readdir_helper_finish(&rdh, true);
+
+
+            free(users);
+            free(playlists);
+            return VLC_SUCCESS;
+        } else {
+            msg_Warn(p_directory, "Не удалось извлечь поля из URL\n");
         }
-
-        freeTrackList(tracks);
-        free(tracksTemp);
-        vlc_readdir_helper_finish(&rdh, true);
-
-        return VLC_SUCCESS;
     }
 
     return VLC_EGENERIC;

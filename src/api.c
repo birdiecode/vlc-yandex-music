@@ -12,7 +12,9 @@
 #include <libxml/tree.h>
 
 //Функция раширения памяти и записи результата
-size_t write_callback(void *ptr, size_t size, size_t nmemb, char **data) {
+size_t
+write_callback(void *ptr, size_t size, size_t nmemb, char **data)
+{
     size_t data_size = size * nmemb;
     *data = realloc(*data, strlen(*data) + data_size + 1);
     if (*data) {
@@ -22,7 +24,9 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, char **data) {
 }
 
 //Функция создания запросов
-CURLcode curl(char *url, char *token, char **result){
+CURLcode
+curl(char *url, char *token, char **result)
+{
     CURL *curl;
     CURLcode res;
     char authorization[250];
@@ -50,7 +54,9 @@ CURLcode curl(char *url, char *token, char **result){
     return res;
 }
 
-void pushTrack(struct Track** head_ref, const char* trName, const char* albName, int trId, int albId) {
+void
+pushTrack(struct Track** head_ref, const char* trName, const char* albName, int trId, int albId)
+{
     struct Track* new_node = (struct Track*)malloc(sizeof(struct Track));
 
     new_node->track_name = strdup(trName);
@@ -65,7 +71,8 @@ void pushTrack(struct Track** head_ref, const char* trName, const char* albName,
 }
 
 // Освобождение памяти от треков
-void freeTrackList(struct Track* node) {
+void
+freeTrackList(struct Track* node) {
     struct Track* current = node;
     struct Track* next;
     while (current != NULL) {
@@ -78,12 +85,16 @@ void freeTrackList(struct Track* node) {
 }
 
 // Получение треков
-int users_playlists(char* user_name, int kind, struct Track** result)
+int
+users_playlists(char* user_name, int kind, struct Track** result)
 {
     char *resp = malloc(1);
     resp[0] = '\0';
 
-    CURLcode res = curl("https://api.music.yandex.net/users/r00tl0l/playlists/3", "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
+    char url[100];
+    sprintf(url, "https://api.music.yandex.net/users/%s/playlists/%d", user_name, kind);
+
+    CURLcode res = curl(url, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
 
     if (res == CURLE_OK) {
         // Парсим json
@@ -142,11 +153,8 @@ download_info(int trId, int alId, char **rresult){
     CURLcode res = curl(url, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
 
     if (res == CURLE_OK) {
-        printf("Ответ на запрос:\n%s\n", resp);
-
         cJSON *root = cJSON_Parse(resp);
         if (root == NULL) {
-            printf("Ошибка при парсинге JSON.\n");
             return 1;
         }
 
@@ -157,8 +165,7 @@ download_info(int trId, int alId, char **rresult){
             cJSON *downloadInfoUrl = cJSON_GetObjectItem(firstResultObj, "downloadInfoUrl");
             if (downloadInfoUrl && cJSON_IsString(downloadInfoUrl)) {
                 char *new_link = strdup(downloadInfoUrl->valuestring);
-                //strcpy(new_link, *rresult);
-                free(*rresult); // Освобождаем память, выделенную для оригинальной строки
+                free(*rresult);
                 *rresult = new_link;
             }
         }
@@ -169,13 +176,13 @@ download_info(int trId, int alId, char **rresult){
     return 0;
 }
 
-int parseXML(const char *xml_string, char **rresult) {
+int
+parseXML(const char *xml_string, char **rresult) {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
 
     doc = xmlReadMemory(xml_string, strlen(xml_string), NULL, NULL, 0);
     if (doc == NULL) {
-        printf("Ошибка при парсинге XML из строки.\n");
         return 1;
     }
 
@@ -234,13 +241,9 @@ download_link(int trId, int alId, char **rresult){
     CURLcode res = curl(rresult2, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
 
     if (res == CURLE_OK) {
-        printf("Ответ на запрос:\n%s\n", resp);
-
         parseXML(resp, rresult);
-            } else {
+    } else {
         return 2;
     }
     return 0;
 }
-
-
