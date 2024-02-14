@@ -9,6 +9,7 @@
 #include <regex.h>
 #include "handler.h"
 #include "api.h"
+#include "config.h"
 
 void extractFields(char *url, char **users, char **playlists) {
     regex_t regex;
@@ -37,6 +38,9 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
 {
 
     msg_Info(p_directory, "%s", p_node->p_item->psz_uri);
+    char *tkn = var_InheritString(p_directory, ACCOUNT_TOKEN_CONFIG);
+    msg_Info(p_directory, "%s", tkn);
+
 
     if (strstr(p_node->p_item->psz_uri, "yandextrack") != 0)
     {
@@ -72,7 +76,7 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
             char *rresult = malloc(400);
             rresult[0] = '\0';
 
-            download_link(track_id, album_id, &rresult);
+            download_link(track_id, album_id, tkn, &rresult);
 
             struct vlc_readdir_helper rdh;
             vlc_readdir_helper_init(&rdh, p_directory, p_node);
@@ -99,7 +103,8 @@ MetadataReadDir(stream_directory_t* p_directory, input_item_node_t* p_node)
 
         if (users && playlists) {
             struct Track* tracks = NULL;
-            int res = users_playlists(users, atoi(playlists), &tracks);
+
+            int res = users_playlists(users, atoi(playlists), tkn, &tracks);
 
             struct vlc_readdir_helper rdh;
             vlc_readdir_helper_init(&rdh, p_directory, p_node);

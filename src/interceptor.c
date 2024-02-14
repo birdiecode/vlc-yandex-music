@@ -34,9 +34,6 @@ MagnetMetadataRead(stream_t* p_access, void* p_buffer, size_t i_len)
 static int
 MagnetMetadataControl(stream_t* access, int query, va_list args)
 {
-    intf_thread_t *intf = (intf_thread_t *)access;
-    msg_Info(intf, "8 Good bye YaM!");
-
     switch (query) {
         case STREAM_GET_PTS_DELAY:
             *va_arg(args, int64_t*) = DEFAULT_PTS_DELAY;
@@ -56,7 +53,6 @@ MagnetMetadataControl(stream_t* access, int query, va_list args)
         default:
             return VLC_EGENERIC;
     }
-
     return VLC_SUCCESS;
 }
 
@@ -78,7 +74,7 @@ InterceptorOpen(vlc_object_t* p_this)
     }
     else if (strcmp(p_access->psz_name, "yandextrack")==0)
     {
-
+        msg_Info(p_access, "[InterceptorOpen] ok");
     }
     else
     {
@@ -86,19 +82,8 @@ InterceptorOpen(vlc_object_t* p_this)
     }
 
     // если относиться то уставливаем эти штуки
-    intf_sys_t *p_sys = malloc( sizeof( intf_sys_t ) );
-    if ( unlikely(p_sys == NULL) )
-        return VLC_ENOMEM;
-
-    p_access->p_sys = p_sys;
-
     p_access->pf_read = MagnetMetadataRead;
     p_access->pf_control = MagnetMetadataControl;
 
     return VLC_SUCCESS;
-}
-
-void
-InterceptorClose(vlc_object_t* p_this){
-
 }

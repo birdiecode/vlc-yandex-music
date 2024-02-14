@@ -16,9 +16,9 @@ struct Track {
 void freeTrackList(struct Track* node);
 
 // Получение треков
-int users_playlists(char* user_name, int kind, struct Track** result);
+int users_playlists(char* user_name, int kind, char* tkn, struct Track** result);
 
-int download_info(int trId, int alId, char **rresult);
+int download_info(int trId, int alId, char* tkn, char **rresult);
 
-int download_link(int trId, int alId, char **rresult);
+int download_link(int trId, int alId, char* tkn, char **rresult);
 #endif //YANDEX_MUSIC_PLUGIN_API_H

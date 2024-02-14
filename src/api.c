@@ -86,7 +86,7 @@ freeTrackList(struct Track* node) {
 
 // Получение треков
 int
-users_playlists(char* user_name, int kind, struct Track** result)
+users_playlists(char* user_name, int kind, char* tkn, struct Track** result)
 {
     char *resp = malloc(1);
     resp[0] = '\0';
@@ -94,7 +94,7 @@ users_playlists(char* user_name, int kind, struct Track** result)
     char url[100];
     sprintf(url, "https://api.music.yandex.net/users/%s/playlists/%d", user_name, kind);
 
-    CURLcode res = curl(url, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
+    CURLcode res = curl(url, tkn, &resp);
 
     if (res == CURLE_OK) {
         // Парсим json
@@ -143,14 +143,14 @@ users_playlists(char* user_name, int kind, struct Track** result)
 }
 
 int
-download_info(int trId, int alId, char **rresult){
+download_info(int trId, int alId, char* tkn, char **rresult){
     char url[100];
     sprintf(url, "https://api.music.yandex.net/tracks/%d:%d/download-info", trId, alId);
 
     char *resp = malloc(1);
     resp[0] = '\0';
 
-    CURLcode res = curl(url, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
+    CURLcode res = curl(url, tkn, &resp);
 
     if (res == CURLE_OK) {
         cJSON *root = cJSON_Parse(resp);
@@ -229,16 +229,16 @@ parseXML(const char *xml_string, char **rresult) {
 }
 
 int
-download_link(int trId, int alId, char **rresult){
+download_link(int trId, int alId, char* tkn, char **rresult){
     char *rresult2 = malloc(1);
     rresult2[0] = '\0';
 
-    download_info(trId, alId, &rresult2);
+    download_info(trId, alId, tkn, &rresult2);
 
     char *resp = malloc(1);
     resp[0] = '\0';
 
-    CURLcode res = curl(rresult2, "y0_AgAAAAArjp76AAG8XgAAAAD6t4__AABAmqc_jQVIYb0oViv72HnhkSl5QQ", &resp);
+    CURLcode res = curl(rresult2, tkn, &resp);
 
     if (res == CURLE_OK) {
         parseXML(resp, rresult);

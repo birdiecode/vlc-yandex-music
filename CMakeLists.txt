@@ -3,17 +3,12 @@ project(yandex_music_plugin C)
 
 set(CMAKE_C_STANDARD 11)
 
-
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(CJSON REQUIRED IMPORTED_TARGET libcjson)
 pkg_check_modules(VLCPLUGIN REQUIRED IMPORTED_TARGET vlc-plugin)
 pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(XML REQUIRED IMPORTED_TARGET libxml-2.0)
-
-
-
-
 
 add_library(yandex_music_plugin SHARED src/library.c
         src/api.c
@@ -22,6 +17,7 @@ add_library(yandex_music_plugin SHARED src/library.c
         src/interceptor.h
         src/handler.c
         src/handler.h
+        src/config.h
 )
 
 target_include_directories(yandex_music_plugin PUBLIC
@@ -53,42 +49,3 @@ target_link_libraries(yandex_music_plugin PkgConfig::XML)
 install(TARGETS yandex_music_plugin
         DESTINATION /usr/lib/x86_64-linux-gnu/vlc/plugins/misc  # Место установки библиотеки
 )
-
-
-project(untitled1 C)
-
-set(CMAKE_C_STANDARD 11)
-
-add_executable(untitled1 test_api_yandex.c src/api.c src/api.h)
-
-target_include_directories(untitled1 PUBLIC
-        ${CJSON_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_link_libraries(untitled1 PkgConfig::CJSON)
-
-target_include_directories(untitled1 PUBLIC
-        ${CURL_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_link_libraries(untitled1 PkgConfig::CURL)
-
-target_include_directories(untitled1 PUBLIC
-        ${XML_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_link_libraries(untitled1 PkgConfig::XML)
-
-
-project(untitled2 C)
-
-set(CMAKE_C_STANDARD 11)
-
-add_executable(untitled2 testxml.c)
-target_include_directories(untitled2 PUBLIC
-        ${XML_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_link_libraries(untitled2 PkgConfig::XML)
-
-
